@@ -14,15 +14,17 @@ const apiURL = "https://mindicador.cl/api/";
 
 
 async function getMindicador() {
+    //Captura de datos desde la API url.
     try {
-
         const res = await fetch(apiURL);
         const Mindicador = await res.json();
         return Mindicador;
+    } 
 
-    } catch (e) {
-        error.innerHTML = `<h1 class='text-danger mt-3'>Error desde la API</h1>
-        <div class='bg-danger mb-3'>${e.message}</div>`;
+    //En caso de que la API url de un error.
+    catch (e) {
+        error.innerHTML = `<h1 class='text-danger'>Error desde la API</h1>
+        <div class='bg-danger'>${e.message}</div>`;
     }
 }
 
@@ -31,46 +33,70 @@ async function renderMindicador() {
     const Mindicador = await getMindicador();
     let template = "";
 
+    //recorrer el objeto 
     for (let indicador of Object.keys(Mindicador)) {
 
+        //obtener el nombre del código. 
         let codigo = Mindicador[indicador].codigo;
 
+        //Obtener la unidad de médida del código.
         let unidad_medida = Mindicador[indicador].unidad_medida;
+        
+        //Obtener el valor del código.
         let valor = Mindicador[indicador].valor;
+
+        //Determinar los códigos que se van a utilizar. Solo se usarán los que estén en pesos y el código no sea igual a ivp.
 
         if ((unidad_medida == 'Pesos') && codigo != 'ivp') {
 
-            //let codigoParse = codigo.toUpperCase().replace('_', ' ');
+            //En el contenido del dropdown utilizar los códigos en mayúscula y sin guión bajo para seleccionar indicador.  
+            let codigoVisual = codigo.toUpperCase().replace('_', ' ');
+            
+            //Almacenar nombre de código para utilizar en la selección del tipo de indicador.
             let codigoParse = codigo;
 
+            //Se agrega cada indicador con un objeto que tenga el nombre del indicador y su valor asociado. 
 
             template += `
-                <option value="${valor}">${codigoParse}</option>
+                <option value='{"key1":"${codigoParse}","key2":"${valor}"}'>${codigoVisual}</option>
             `;
         }
     }
+    //console.log(template);
 
+    //Imprimir todas las opciones dentro del select con id llamado selector.
     selector.innerHTML = template;
 }
+//Comenzar con el proceso de captura de información desde API url.
 renderMindicador()
 
+//En caso de presionar el botón de buscar realizar la siguiente función. 
 boton.addEventListener("click", () => {
 
+    //Almacenar en variable el valor del input.
     let pesos = agregar.value;
     //Quitar espacios en blanco en el input.
     pesos = pesos.trim();
 
-    //Ingresar un nuevo objeto si el contenido no es vacío.
-
+    //Si el contenido del input es vacío, realizar un alert. 
     if (pesos === "") {
         agregar.value = "";
         alert("No dejar espacios vacíos");
     }
+    //En caso de que el contenido no sea vacío, procesar los datos. 
     else {
-        const valor = document.querySelector("#selector").value;
-        const sel = document.querySelector("#selector")
-        var nombre = sel.options[sel.selectedIndex].text;
+        
+        //Obtener los valores asociados a la opción seleccionada. 
+        const valores = document.querySelector("#selector").value;
+        //Parsear los valores para obtener el nombre y su valor. 
+        var myValue = JSON.parse(valores);
+        
+        //Almacenar el nombre del código.
+        let nombre=myValue.key1;
+        //Almacenar el valor del código.
+        let valor=myValue.key2;
 
+        //Realizar el calculo asociado al código y su valor.  
         const total = pesos / valor;
 
         let redondear = parseFloat(total).toFixed(3);
