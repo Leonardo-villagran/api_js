@@ -4,6 +4,7 @@ const footer = document.querySelector("#footer");
 const agregar = document.querySelector("#agregar");
 const error = document.querySelector("#error");
 let chart = document.querySelector("#chart");
+
 const grafico_titulo=document.querySelector("#grafico_titulo");
 
 //let cod = ""
@@ -56,9 +57,9 @@ async function renderMindicador() {
 
         if ((unidad_medida == 'Pesos') && codigo != 'ivp') {
 
-            //En el contenido del dropdown utilizar los códigos en mayúscula y sin guión bajo para seleccionar indicador. 
+            //En el contenido del dropdown utilizar los nombres en mayúscula para seleccionar indicador. 
             let nombre = Mindicador[indicador].nombre;
-            let codigoVisual = nombre.toUpperCase().replace('_', ' ');
+            let codigoVisual = nombre.toUpperCase();
             
             //Almacenar nombre de código para utilizar en la selección del tipo de indicador.
             let codigoParse = codigo;
@@ -205,7 +206,7 @@ async function renderGrafica(Apicod, nombre) {
     const config = prepararConfiguracionParaLaGrafica(fechas, nombre);
 
     //se ingresa la etiqueta canvas donde se imprimirá el gráfico.
-    chart.innerHTML='<canvas id="myChart"></canvas>'
+    chart.innerHTML='<canvas id="myChart" class="myChart"></canvas>'
     
     //Se selecciona la etiqueta donde se imprimirá el gráfico.
     const chartDOM = document.getElementById("myChart");
