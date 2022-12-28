@@ -6,13 +6,16 @@ const error = document.querySelector("#error");
 let chart = document.querySelector("#chart");
 const grafico_titulo=document.querySelector("#grafico_titulo");
 
-let cod = ""
+//let cod = ""
+//Se genera un gráfico nulo al iniciar.
 let myChart=null;
 
+//Se define donde se colocarán las opciones de selección 
 const selector = document.querySelector("#selector");
+//Se almacena la dirección de la API a utilizar. 
 const apiURL = "https://mindicador.cl/api/";
 
-
+//Función que se comunica con la API url
 async function getMindicador() {
     //Captura de datos desde la API url.
     try {
@@ -28,16 +31,20 @@ async function getMindicador() {
     }
 }
 
+//Se determinan los datos que se utilizarán de la API url. 
 async function renderMindicador() {
 
     const Mindicador = await getMindicador();
     let template = "";
+
 
     //recorrer el objeto 
     for (let indicador of Object.keys(Mindicador)) {
 
         //obtener el nombre del código. 
         let codigo = Mindicador[indicador].codigo;
+
+        console.log(indicador.codigo);
 
         //Obtener la unidad de médida del código.
         let unidad_medida = Mindicador[indicador].unidad_medida;
@@ -49,14 +56,16 @@ async function renderMindicador() {
 
         if ((unidad_medida == 'Pesos') && codigo != 'ivp') {
 
-            //En el contenido del dropdown utilizar los códigos en mayúscula y sin guión bajo para seleccionar indicador.  
-            let codigoVisual = codigo.toUpperCase().replace('_', ' ');
+            //En el contenido del dropdown utilizar los códigos en mayúscula y sin guión bajo para seleccionar indicador. 
+            let nombre = Mindicador[indicador].nombre;
+            let codigoVisual = nombre.toUpperCase().replace('_', ' ');
             
             //Almacenar nombre de código para utilizar en la selección del tipo de indicador.
             let codigoParse = codigo;
 
             //Se agrega cada indicador con un objeto que tenga el nombre del indicador y su valor asociado. 
 
+            //Se define value en formato Json para pasar más de un valor desde el select. 
             template += `
                 <option value='{"key1":"${codigoParse}","key2":"${valor}"}'>${codigoVisual}</option>
             `;
@@ -96,15 +105,20 @@ boton.addEventListener("click", () => {
         //Almacenar el valor del código.
         let valor=myValue.key2;
 
-        //Realizar el calculo asociado al código y su valor.  
+        //Realizar el cálculo asociado al código y su valor.  
         const total = pesos / valor;
 
-        let redondear = parseFloat(total).toFixed(3);
-        let esNum = new Intl.NumberFormat('es-ES')
+        //Redondear el resultado a tres cifras decimales.
+        let redondear = parseFloat(total).toFixed(4);
+
+        //Mostrar el resultado en formato español.
+        let esNum = new Intl.NumberFormat('es-CL')
         redondear = esNum.format(redondear)
 
-        footer.innerHTML = `<p>Resultado: ${redondear}</p>`
+        //Imprimir resultado en el card.
+        footer.innerHTML = `<p>Resultado: $${redondear}</p>`
 
+        //Llamar a la API asociada a cada indicador y realizar el gráfico. 
         const Apicod = `https://mindicador.cl/api/${nombre}`;
         renderGrafica(Apicod, nombre);
 
@@ -113,6 +127,8 @@ boton.addEventListener("click", () => {
 
 });
 
+
+//Obtener las fechas que se encuentran dentro de la API cada el indicador seleccionado.
 async function getFechas(Apicod) {
 
     const endpoint = Apicod;
@@ -122,11 +138,13 @@ async function getFechas(Apicod) {
     return serie;
 }
 
-
+    // Creamos las variables necesarias para el objeto de configuración
 function prepararConfiguracionParaLaGrafica(fechas, nombre) {
 
-    // Creamos las variables necesarias para el objeto de configuración
+    //Se realizará gráfico en formato de línea
     const tipoDeGrafica = "line";
+
+    //Se configuran el arreglo de fechas, para que tengan formato español.
     const nombresDeLasFechas = fechas.map((fechaArreglo) => {
         let fechaActual=fechaArreglo.fecha;
         let date = new Date(Date.parse(fechaActual));
@@ -134,51 +152,73 @@ function prepararConfiguracionParaLaGrafica(fechas, nombre) {
         return fecha;
     });
 
-    //console.log(nombresDeLasMonedas);
+    //Se coloca el título en mayúsculas
     const titulo =nombre.toUpperCase();
+    //Se configura la línea de color rojo.
     const colorDeLinea = "red";
+    //Se almacenan los valores de cada fecha en la constante valores.
     const valores = fechas.map((fechaArreglo) => fechaArreglo.valor);
 
     let fechas_reversed=[];
     let valores_reversed=[];
-
+    
+    //Se almacenan las últimas 10 fechas del indicador seleccionado
     for (let i = 0; i <= 10 ; i++) {
-        fechas_reversed[i]=nombresDeLasFechas[10-i];
+        fechas_reversed[i]=nombresDeLasFechas[i];
     }
-
+    //Se almacenan los últimos  10 valores asociados a las fechas del indicador seleccionado.
     for (let j = 0; j <= 10 ; j++) {
-        valores_reversed[j]=valores[10-j];
+        valores_reversed[j]=valores[j];
     }
 
+    //Se reversan los arreglos para que los resultados queden de izquierda a derecha en el gráfico. 
+    const f=fechas_reversed.reverse();
+    const v=valores_reversed.reverse();
+    
     // Creamos el objeto de configuración usando las variables anteriores
     const config = {
         type: tipoDeGrafica,
         data: {
-            labels: fechas_reversed,
+            labels: f,
             datasets: [
                 {
                     label: titulo,
                     backgroundColor: colorDeLinea,
                     borderColor: "red",
-                    data: valores_reversed
+                    data: v
                 }
             ]
         }
     };
     return config;
 }
+
+//Generar gráfico.
 async function renderGrafica(Apicod, nombre) {
 
+    //Si el indicador tiene un guión bajo se reemplaza por unn espacio en blanco. 
     const titulo=nombre.replace('_', ' '); 
     grafico_titulo.innerHTML = ("Últimos 10 indicadores de "+titulo).toUpperCase();
+    //Se llama a la API y se obtienen las fechas en formato español. 
     const fechas = await getFechas(Apicod);
+    //Se procesan los datos de para generar la gráfica.
     const config = prepararConfiguracionParaLaGrafica(fechas, nombre);
+
+    //se ingresa la etiqueta canvas donde se imprimirá el gráfico.
+    chart.innerHTML='<canvas id="myChart"></canvas>'
+    
+    //Se selecciona la etiqueta donde se imprimirá el gráfico.
     const chartDOM = document.getElementById("myChart");
+
+    //Se le asigna el color blanco al fondo del gráfico.
     chartDOM.style.backgroundColor = "white";
+    
+    //Se destruye el gráfico si se vuelve a crear. Cada vez que se realiza una búsqueda y el gráfico está creado se genera un error, por esa razón se destruye si el gráfico existe. 
     
     if (myChart!=null){
         myChart.destroy();
     }
+    //Se genera el gráfico con su configuración asociada. 
     myChart=new Chart(chartDOM, config);
 
 }
