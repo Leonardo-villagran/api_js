@@ -45,7 +45,7 @@ async function renderMindicador() {
         //obtener el nombre del código. 
         let codigo = Mindicador[indicador].codigo;
 
-        console.log(indicador.codigo);
+        //console.log(indicador.codigo);
 
         //Obtener la unidad de médida del código.
         let unidad_medida = Mindicador[indicador].unidad_medida;
