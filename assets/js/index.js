@@ -64,8 +64,6 @@ async function renderMindicador() {
             //Almacenar nombre de código para utilizar en la selección del tipo de indicador.
             let codigoParse = codigo;
 
-            //Se agrega cada indicador con un objeto que tenga el nombre del indicador y su valor asociado. 
-
             //Se define value en formato Json para pasar más de un valor desde el select. 
             template += `
                 <option value='{"key1":"${codigoParse}","key2":"${valor}"}'>${codigoVisual}</option>
@@ -146,7 +144,7 @@ function prepararConfiguracionParaLaGrafica(fechas, nombre) {
     const tipoDeGrafica = "line";
 
     //Se configuran el arreglo de fechas, para que tengan formato español.
-    const nombresDeLasFechas = fechas.map((fechaArreglo) => {
+    let nombresDeLasFechas = fechas.map((fechaArreglo) => {
         let fechaActual=fechaArreglo.fecha;
         let date = new Date(Date.parse(fechaActual));
         fecha=date.toLocaleDateString('es-ES');
@@ -158,19 +156,18 @@ function prepararConfiguracionParaLaGrafica(fechas, nombre) {
     //Se configura la línea de color rojo.
     const colorDeLinea = "red";
     //Se almacenan los valores de cada fecha en la constante valores.
-    const valores = fechas.map((fechaArreglo) => fechaArreglo.valor);
+    let valores = fechas.map((fechaArreglo) => fechaArreglo.valor);
 
     let fechas_reversed=[];
     let valores_reversed=[];
     
     //Se almacenan las últimas 10 fechas del indicador seleccionado
-    for (let i = 0; i <= 10 ; i++) {
-        fechas_reversed[i]=nombresDeLasFechas[i];
-    }
+    fechas_reversed=nombresDeLasFechas.slice(0,10);
+    console.log(fechas_reversed);
+
     //Se almacenan los últimos  10 valores asociados a las fechas del indicador seleccionado.
-    for (let j = 0; j <= 10 ; j++) {
-        valores_reversed[j]=valores[j];
-    }
+    valores_reversed=valores.slice(0,10);
+    console.log(valores_reversed);
 
     //Se reversan los arreglos para que los resultados queden de izquierda a derecha en el gráfico. 
     const f=fechas_reversed.reverse();
