@@ -163,11 +163,11 @@ function prepararConfiguracionParaLaGrafica(fechas, nombre) {
     
     //Se almacenan las últimas 10 fechas del indicador seleccionado
     fechas_reversed=nombresDeLasFechas.slice(0,10);
-    console.log(fechas_reversed);
+    //console.log(fechas_reversed);
 
     //Se almacenan los últimos  10 valores asociados a las fechas del indicador seleccionado.
     valores_reversed=valores.slice(0,10);
-    console.log(valores_reversed);
+    //console.log(valores_reversed);
 
     //Se reversan los arreglos para que los resultados queden de izquierda a derecha en el gráfico. 
     const f=fechas_reversed.reverse();
